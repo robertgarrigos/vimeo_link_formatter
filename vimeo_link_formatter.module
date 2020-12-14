@@ -45,7 +45,7 @@ function vimeo_link_formatter_field_formatter_settings_form($field, $instance, $
   module_load_include('inc', 'vimeo_link_formatter', 'vimeo_link_formatter.admin');
   // Call the function which handles this formatter.
   $function = __FUNCTION__ . '_' . $instance['display'][$view_mode]['type'];
-  return call_user_func($function, $field, $instance, $view_mode, $form, $form_state);
+  return $function($field, $instance, $view_mode, $form, $form_state);
 }
 
 /**
