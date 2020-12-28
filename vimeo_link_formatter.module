@@ -78,6 +78,14 @@ function vimeo_link_formatter_field_formatter_view_vimeo_link_formatter_player($
   }
   $player_id = backdrop_html_id('vimeo-player');
   $attributes['id'] = $player_id;
+
+  // Add fullscreen attributes.
+  if ($display['settings']['fullscreen']) {
+    $attributes['mozallowfullscreen'] = 'mozallowfullscreen';
+    $attributes['webkitallowfullscreen'] = 'webkitallowfullscreen';
+    $attributes['allowfullscreen'] = 'allowfullscreen';
+  }
+
   $attributes = backdrop_attributes($attributes);
 
   // Default Vimeo Player formatter settings.
@@ -113,6 +121,7 @@ function vimeo_link_formatter_field_formatter_view_vimeo_link_formatter_player($
   foreach ($items as $delta => $item) {
     // Extract the ID from the URL.
     if ($vimeo = vimeo_link_formatter_id($item['url'])) {
+
       // Allow modules to alter embed code.
       $embed = array(
         'title' => $item['title'],
@@ -152,6 +161,7 @@ function vimeo_link_formatter_default_settings_player() {
     'portrait' => 1,
     'color' => '00adef',
     'autoplay' => 0,
+    'fullscreen' => 1,
     'loop' => 0,
     'width' => '400',
     'height' => '225',

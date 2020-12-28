@@ -21,6 +21,7 @@ function vimeo_link_formatter_field_formatter_settings_summary_vimeo_link_format
     'title' => t('Title'),
     'byline' => t('Byline'),
     'autoplay' => t('Autoplay'),
+    'fullscreen' => t('Full Screen'),
     'loop' => t('Loop'),
     'js_api' => t('Javascript API'),
   );
@@ -116,6 +117,13 @@ function vimeo_link_formatter_field_formatter_settings_form_vimeo_link_formatter
     '#type' => 'checkbox',
     '#title' => t('Autoplay'),
     '#description' => t('Automatically play the video on load.  This also causes the portrait, title and byline to be hidden.'),
+  );
+
+  // Fullscreen
+  $form['fullscreen'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow FullScreen'),
+    '#description' => t('Enable the FullScreen Button on the player.'),
   );
 
   // Loop textbox.
