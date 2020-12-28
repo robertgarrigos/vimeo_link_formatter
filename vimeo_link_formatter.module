@@ -72,13 +72,16 @@ function vimeo_link_formatter_field_formatter_view_vimeo_link_formatter_player($
   // Attributes for the <iframe>.
   // Makes IE's <iframe> borders play nicely.
   $attributes = array('frameborder' => 0);
+
   $settings = array('width', 'height');
-  foreach ($settings as $name) {
-    $attributes[$name] = $display['settings'][$name];
+  if (!$display['settings']['responsive']) {
+    foreach ($settings as $name) {
+      $attributes[$name] = $display['settings'][$name];
+    }
   }
+
   $player_id = backdrop_html_id('vimeo-player');
   $attributes['id'] = $player_id;
-  $attributes = backdrop_attributes($attributes);
 
   // Default Vimeo Player formatter settings.
   $defaults = vimeo_link_formatter_default_settings_player();
@@ -94,9 +97,9 @@ function vimeo_link_formatter_field_formatter_view_vimeo_link_formatter_player($
     // Vimeo does not pay attention to the value of the paramter, but
     // whether the parameter is set or not.  So it is important not to set
     // parameters to their default values.  I.e.
-//   Do not set title=1, because that is Vimeo.com's default, and setting
-//   title=1 will cause the same effect as setting title=0, which is not
-//   desirable.
+    //   Do not set title=1, because that is Vimeo.com's default, and setting
+    //   title=1 will cause the same effect as setting title=0, which is not
+    //   desirable.
     // Also, skip over the settings used for attributes.
     if (!in_array($name, $settings) && isset($defaults[$name]) && $defaults[$name] !== $value) {
       if ($name == 'js_api') {
@@ -113,18 +116,39 @@ function vimeo_link_formatter_field_formatter_view_vimeo_link_formatter_player($
   foreach ($items as $delta => $item) {
     // Extract the ID from the URL.
     if ($vimeo = vimeo_link_formatter_id($item['url'])) {
-      // Allow modules to alter embed code.
+
+      // Add inline styles for responsive video embed.
+      if ($display['settings']['responsive']) {
+        $attributes['style'] = 'position:absolute; top:0; left:0; width:100%; height:100%;';
+      }
+
       $embed = array(
         'title' => $item['title'],
         'url_options' => $url_options,
-        'attributes' => $attributes,
+        'attributes' => backdrop_attributes($attributes),
       );
+
+      // Allow modules to alter embed code.
       backdrop_alter('vimeo_link_formatter_embed', $embed, $item, $display);
 
+      // Build the src attribute from the altered url_options.
       $url = url($vimeo['protocol'] . '://player.vimeo.com/video/' . $vimeo['id'], $embed['url_options']);
+
+      // Sanitize the title before setting as an attribute.
       $title = check_plain($embed['title']);
 
-      $ret[] = array('#markup' => '<iframe title="' . $title . '" src="' . $url . '"' . $embed['attributes'] . '></iframe>');
+      // Build the iframe tag.
+      $iframe = '<iframe title="' . $title . '" src="' . $url . '"' . $embed['attributes'] . '></iframe>';
+
+      if ($display['settings']['responsive']) {
+        // Add a container.
+        $markup = '<div style="padding: 56.25% 0 0 0; position: relative;">' . $iframe . '</div>';
+      }
+      else {
+        $markup = $iframe;
+      }
+
+      $ret[] = array('#markup' => $markup);
     }
     else {
       // The link is not a valid Vimeo.com link.
@@ -153,6 +177,7 @@ function vimeo_link_formatter_default_settings_player() {
     'color' => '00adef',
     'autoplay' => 0,
     'loop' => 0,
+    'responsive' => 1,
     'width' => '400',
     'height' => '225',
     'js_api' => 0,

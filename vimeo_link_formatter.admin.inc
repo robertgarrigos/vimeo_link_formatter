@@ -30,28 +30,41 @@ function vimeo_link_formatter_field_formatter_settings_summary_vimeo_link_format
     }
   }
 
-  // Join the enabled options with commas and end with a period.
-  // Set $options to an empty string if none are enabled.
-  $options = empty($options) ? '' : implode(', ', $options) . '.';
-
   // This CSS is (mostly) semantic, not style.  Inline CSS is appropriate.
   $style = '
     background-color: #' . $settings['color'] . ';
     color: black;
-    font-weight: bold;
     padding-left: 0.2em;
     padding-right: 0.2em;
   ';
   $vars = array(
-    '!width' => $settings['width'],
-    '!height' => $settings['height'],
     // Inline CSS is not translatable.
     '!attributes' => backdrop_attributes(compact('style')),
     '!color' => $settings['color'],
-    '!options' => $options,
   );
 
-  return t('!width x !height <code !attributes>!color</code> Player options: !options', $vars);
+  if ($settings['responsive']) {
+    $message =  'Responsive';
+  }
+  else {
+    $vars['!width'] = $settings['width'];
+    $vars['!height'] = $settings['height'];
+    $message =  '!width x !height';
+  }
+
+  $message .= ' <code !attributes>!color</code>';
+
+  // Set $options to an empty string if none are enabled.
+  $options_val = '';
+  if (!empty($options)) {
+    // Join the enabled options with commas and end with a period.
+    $options_val = implode(', ', $options) . '.';
+    $vars['!options'] = $options_val;
+    $message .= ' Player options: !options';
+  }
+
+
+  return t($message, $vars);
 }
 
 /**
@@ -65,16 +78,37 @@ function vimeo_link_formatter_field_formatter_settings_form_vimeo_link_formatter
   // A render()-compatible array that is embeddeble into a Form API form.
   $form = array();
 
+  $form['responsive'] = array(
+    '#type' => 'radios',
+    '#title' => t('Responsive'),
+    '#options' => array(
+      1 => t('Responsive: Automatically adjust player size to the dimensions of the the container element.'),
+      0 => t('Fixed Size: Define specific width and height for the video player.'),
+    ),
+  );
+
   // Width textbox.
   $form['width'] = array(
+    '#type' => 'textfield',
     '#title' => t('Width'),
     '#description' => t('The width of the player in pixels or relative to the container element.  Do not include "<em>px</em>".  E.g. "<em>500</em>" or "<em>100%</em>".  Defaults to "<em>!default</em>".', array('!default' => $defaults['width'])),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="fields[field_vimeo][settings_edit_form][settings][responsive]"]' => array('value' => 0),
+      ),
+    ),
   );
 
   // Height textbox.
   $form['height'] = array(
+    '#type' => 'textfield',
     '#title' => t('Height'),
     '#description' => t('The height of the player in pixels or relative to the container element.  Do not include "<em>px</em>".  E.g. "<em>280</em>" or "<em>56%</em>".  Defaults to "<em>!default</em>".', array('!default' => $defaults['height'])),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="fields[field_vimeo][settings_edit_form][settings][responsive]"]' => array('value' => 0),
+      ),
+    ),
   );
 
   // Color textbox.
