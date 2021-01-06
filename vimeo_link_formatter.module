@@ -189,7 +189,7 @@ function vimeo_link_formatter_field_formatter_view_vimeo_link_formatter_thumbnai
     if ($vimeo = vimeo_link_formatter_id($item['url'])) {
       // Get the cached thumbnail data.
       $cache_id = 'vimeo_link_formatter_thumbnail_hash_' . $vimeo['id'];
-      if ($cached = cache_get($cache_id, 'cache')) {
+      if ($cached = cache_get($cache_id, 'cache') && $cached->data) {
         $video_hash = $cached->data;
       }
 
